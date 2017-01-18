@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:visible="true"
+        android:enabled="true"
+        android:menuCategory="container">
+
+        <item
+            android:title="Open"
+            android:id="@+id/menu_open"/>
+        <item
+            android:title="Rename"
+            android:id="@+id/menu_rename"/>
+        <item
+            android:title="Delete"
+            android:id="@+id/menu_delete"/>
+    </group>
+
+</menu>

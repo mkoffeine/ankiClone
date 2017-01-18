@@ -55,11 +55,12 @@ public class DeckPresenter implements DecksContract.Presenter {
     }
 
     @Override
-    public void removeDeck(Deck deck) {
+    public boolean removeDeck(Deck deck) {
         int deleted = deckDbHolder.deleteDeck(deck);
         if (deleted > 0) {
             loadDecks();
         }
+        return deleted > 0;
     }
 
     @Override
@@ -77,17 +78,4 @@ public class DeckPresenter implements DecksContract.Presenter {
             disposable.dispose();
         }
     }
-
- /*   private void addAlot(int size) {
-        long t = System.currentTimeMillis();
-        for (int i = 0; i<size;i++) {
-            deckDbHolder.createNewDeck(new Deck("rand"+rand(10000)));
-        }
-        long t2 = System.currentTimeMillis();
-        System.out.println("---------addAlot time: " + (t2-t));
-    }
-    Random random = new Random();
-    private int rand(int max) {
-        return random.nextInt(max);
-    }*/
 }

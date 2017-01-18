@@ -15,7 +15,7 @@ public interface DecksContract {
 
         void addDeck();
 
-        boolean removeDeck(Deck deck);
+        void removeDeck(Deck deck);
 
         void renameDeck(Deck deck);
     }
@@ -25,7 +25,7 @@ public interface DecksContract {
 
         void addDeck(String name);
 
-        void removeDeck(Deck deck);
+        boolean removeDeck(Deck deck);
 
         void renameDeck(Deck deck, String name);
 

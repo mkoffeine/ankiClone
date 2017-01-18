@@ -7,10 +7,13 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -95,35 +98,57 @@ public class DeckView extends Fragment implements DecksContract.View {
 
     @Override
     public void addDeck() {
+        buildDeckEdit(null);
+    }
+
+    @Override
+    public void renameDeck(Deck deck) {
+        buildDeckEdit(deck);
+    }
+
+    private void buildDeckEdit(final Deck deck) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.typeDeckName);
 
         final EditText input = new EditText(getContext());
         builder.setView(input);
+
+        if (deck == null) {
+            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String name = input.getText().toString();
+                    presenter.addDeck(name);
+                }
+            });
+        } else {
+            input.setText(deck.getName());
+            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String name = input.getText().toString();
+                    presenter.renameDeck(deck, name);
+                }
+            });
+        }
+        builder.show();
+    }
+
+    @Override
+    public void removeDeck(final Deck deck) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Do you want to remove deck: " + deck.getName());
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String name = input.getText().toString();
-                presenter.addDeck(name);
+                presenter.removeDeck(deck);
             }
         });
         builder.show();
     }
 
-    @Override
-    public boolean removeDeck(Deck deck) {
-        return false;
-    }
-
-    @Override
-    public void renameDeck(Deck deck) {
-
-    }
-
     private class DeckItemHolder extends RecyclerView.ViewHolder {
         public TextView name;
-        public Deck deck;
-
 
         DeckItemHolder(View itemView) {
             super(itemView);
@@ -132,22 +157,37 @@ public class DeckView extends Fragment implements DecksContract.View {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (v.getParent() != null && v.getParent().getParent() != null) {
-                        DeckItemHolder vh = (DeckItemHolder) recyclerView.getChildViewHolder(v);
-                        Toast.makeText(getContext(), "  " + vh.deck, Toast.LENGTH_LONG).show();
-                    }
+                    Deck deck = (Deck) v.getTag();
+                    Toast.makeText(getContext(), "  " + deck, Toast.LENGTH_LONG).show();
                 }
             });
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public boolean onLongClick(View v) {
-                    DeckItemHolder vh = (DeckItemHolder) recyclerView.getChildViewHolder(v);
-                    presenter.removeDeck(vh.deck);
+                public boolean onLongClick(final View v) {
+                    PopupMenu popupMenu = new PopupMenu(getContext(), v);
+                    popupMenu.getMenuInflater().inflate(R.menu.popup, popupMenu.getMenu());
+                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            Deck deck = (Deck) v.getTag();
+                            switch (item.getItemId()) {
+                                case R.id.menu_open:
+                                    System.out.println("-------show " + deck);
+                                    break;
+                                case R.id.menu_delete:
+                                    removeDeck(deck);
+                                    break;
+                                case R.id.menu_rename:
+                                    renameDeck(deck);
+                                    break;
+                            }
+                            return true;
+                        }
+                    });
+                    popupMenu.show();
                     return true;
                 }
             });
-
-
         }
     }
 
@@ -168,7 +208,7 @@ public class DeckView extends Fragment implements DecksContract.View {
         @Override
         public void onBindViewHolder(DeckItemHolder viewHolder, Cursor cursor) {
             Deck deck = Deck.fromCursor(cursor);
-            viewHolder.deck = deck;
+            viewHolder.itemView.setTag(deck);
             viewHolder.name.setText(cursor.getPosition() + "  " + deck.getName());
         }
     }
